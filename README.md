@@ -1,30 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Anti Book Club
 
-## Getting Started
+## Context
 
-First, run the development server:
+We want to find people to a book with in a sync book club.
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+## Forces that make demands on the form
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1 “Social contact and a common schedule will make me more likely to dedicate time to this book”
+2 “By exchanging ideas or trying to explain my understanding I’ll be more likely to make real use of the material in my mind”
+3 “I already know people who I’d enjoy doing this with”
+4 “I don’t want to commit to maintaining a list in yet another app. Ideally this is a one stop thing for me”
+5 “I’d like to know when there’s quorum to start reading a book”
+6 “It’s okay, I can organise the meetings by myself, but I need to know who wants to read this book”
+7 “I’d like to know what this person I barely know now is wanting to read”
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Resolve related forces into diagrams
 
-## Learn More
+1 Add book I want to read
+2 See if there's books where I can start a club
+3 Contact the people to start the club on a book
 
-To learn more about Next.js, take a look at the following resources:
+## Place the built form into context and look for misfits
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Implementation details
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+An Airtable automation can delete old demand periodically: https://community.airtable.com/t/how-to-mark-a-record-for-deletion-automatically-after-18-hours/33533/2 (100 runs per month in free tier).
