@@ -1,9 +1,18 @@
+import React from "react";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import Airtable from "airtable";
 import _ from "lodash";
+const { nanoid } = require("nanoid");
 
-export default function Home({ books }) {
+export default function Home({ library }) {
+  const [{ books, secret }, setLocal] = useLocalStorage({
+    books: [],
+    secret: nanoid(),
+  });
+  console.log("library", library);
+  console.log("books", books, secret);
+  const [search, setSearch] = React.useState("");
   return (
     <div className={styles.container}>
       <Head>
@@ -11,7 +20,28 @@ export default function Home({ books }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <pre style={{ width: "100%" }}>{JSON.stringify(books, null, 2)}</pre>
+      <input value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div>
+        {library
+          .filter(
+            (d) =>
+              search.length > 0 &&
+              (d.name.toLowerCase().includes(search.toLowerCase()) ||
+                d.author.toLowerCase().includes(search.toLowerCase()))
+          )
+          .map(({ id, name, author, thumb, messages }) => (
+            <div key={id}>
+              {name}, by {author}{" "}
+              <button
+                onClick={() =>
+                  setLocal((s) => ({ ...s, myBooks: [...s.myBooks, id] }))
+                }
+              >
+                + Add
+              </button>
+            </div>
+          ))}
+      </div>
     </div>
   );
 }
@@ -22,11 +52,9 @@ export async function getStaticProps() {
   );
 
   const books = await base("Books")
-    .select({ filterByFormula: "{ref_count} > 1" })
+    .select({ filterByFormula: "{ref_count} > 0" })
     .all()
     .then((records) => records.map(({ id, fields }) => ({ id, ...fields })));
-
-  console.log("books", books);
 
   const messages = await base("Board")
     .select({
@@ -44,13 +72,12 @@ export async function getStaticProps() {
         {}
       )
     );
-  console.log("messages", messages);
 
   return {
     // will be passed to the page component as props
     props: {
-      books: books.map(
-        ({ id, name = null, author = null, refs, thumb = null }) => ({
+      library: books.map(
+        ({ id, name = "", author = "", refs, thumb = "" }) => ({
           id,
           name,
           author,
@@ -61,4 +88,21 @@ export async function getStaticProps() {
     },
     revalidate: 10, // At most every 10 seconds
   };
+}
+
+function useLocalStorage(initialState) {
+  const [state, setState] = React.useState(
+    process.browser &&
+      JSON.parse(
+        localStorage.getItem("antibookclub-v1") || JSON.stringify(initialState)
+      )
+  );
+  return [
+    state,
+    (f) => {
+      const newState = f(state);
+      setState(newState);
+      localStorage.setItem("antibookclub-v1", JSON.stringify(newState));
+    },
+  ];
 }
