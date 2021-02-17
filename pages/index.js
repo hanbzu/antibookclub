@@ -27,15 +27,28 @@ export default function Home({ library }) {
       <div>
         {results.map(
           ({ id, isbn, googleid, name, author, thumb, messages }) => (
-            <div key={`${id}-${isbn}-${googleid}`}>
-              {name}, by {author}{" "}
-              <button
-                onClick={() =>
-                  setLocal((s) => ({ ...s, myBooks: [...s.myBooks, id] }))
-                }
-              >
-                + Add
-              </button>
+            <div
+              key={`${id}-${isbn}-${googleid}`}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                height: 100,
+              }}
+            >
+              <img src={thumb} />
+              <div>
+                {name}
+                {author.length > 0 ? `, by ${author}` : ""}
+              </div>
+              <div>
+                <button
+                  onClick={() =>
+                    setLocal((s) => ({ ...s, myBooks: [...s.myBooks, id] }))
+                  }
+                >
+                  Add
+                </button>
+              </div>
             </div>
           )
         )}
