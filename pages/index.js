@@ -3,16 +3,19 @@ import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import Airtable from "airtable";
 import _ from "lodash";
-const { nanoid } = require("nanoid");
+import { nanoid } from "nanoid";
+import useLocalStorage from "../lib/useLocalStorage";
+import useSearch from "../lib/useSearch";
 
 export default function Home({ library }) {
   const [{ books, secret }, setLocal] = useLocalStorage({
     books: [],
     secret: nanoid(),
   });
-  console.log("library", library);
-  console.log("books", books, secret);
+  //console.log("library", library);
+  //console.log("books", books, secret);
   const [search, setSearch] = React.useState("");
+  const results = useSearch(search, library);
   return (
     <div className={styles.container}>
       <Head>
@@ -22,15 +25,9 @@ export default function Home({ library }) {
 
       <input value={search} onChange={(e) => setSearch(e.target.value)} />
       <div>
-        {library
-          .filter(
-            (d) =>
-              search.length > 0 &&
-              (d.name.toLowerCase().includes(search.toLowerCase()) ||
-                d.author.toLowerCase().includes(search.toLowerCase()))
-          )
-          .map(({ id, name, author, thumb, messages }) => (
-            <div key={id}>
+        {results.map(
+          ({ id, isbn, googleid, name, author, thumb, messages }) => (
+            <div key={`${id}-${isbn}-${googleid}`}>
               {name}, by {author}{" "}
               <button
                 onClick={() =>
@@ -40,7 +37,8 @@ export default function Home({ library }) {
                 + Add
               </button>
             </div>
-          ))}
+          )
+        )}
       </div>
     </div>
   );
@@ -88,21 +86,4 @@ export async function getStaticProps() {
     },
     revalidate: 10, // At most every 10 seconds
   };
-}
-
-function useLocalStorage(initialState) {
-  const [state, setState] = React.useState(
-    process.browser &&
-      JSON.parse(
-        localStorage.getItem("antibookclub-v1") || JSON.stringify(initialState)
-      )
-  );
-  return [
-    state,
-    (f) => {
-      const newState = f(state);
-      setState(newState);
-      localStorage.setItem("antibookclub-v1", JSON.stringify(newState));
-    },
-  ];
 }
