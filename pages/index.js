@@ -28,7 +28,7 @@ export default function Home({ library }) {
         {results.map(
           ({ id, isbn, googleid, name, author, thumb, messages }) => (
             <div
-              key={`${id}-${isbn}-${googleid}`}
+              key={googleid || id}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -37,8 +37,9 @@ export default function Home({ library }) {
             >
               <img src={thumb} />
               <div>
-                {name}
-                {author.length > 0 ? `, by ${author}` : ""}
+                <div>{googleid || id}</div>
+                <div>{name}</div>
+                {author.length > 0 && <div>author</div>}
               </div>
               <div>
                 <button

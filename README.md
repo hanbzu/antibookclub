@@ -2,7 +2,7 @@
 
 ## Context
 
-We want to find people to a book with in a sync book club.
+To find people to read a book with (~ a book club).
 
 ## Forces that make demands on the form
 
@@ -19,6 +19,16 @@ We want to find people to a book with in a sync book club.
 1 Add book I want to read
 2 See if there's books where I can start a club
 3 Contact the people to start the club on a book
+
+## Pattern language
+
+- One club per book.
+- No more than 5 books. This is for finding people, not a place to hold a reading list.
+- A shareable link will allow you to share your books with friends. This is the primary way of comming up with people for your club.
+- Immediate, link-to-usage. No signing up, no setting up. You should be done in under 5 minutes.
+- Ephemeral. Your ad is removed after some time. You need to actively bring it back if you want.
+- Subsequent messages or notifications are NOT handled by the app. People need do this manually (email, Telegram, Twitter, whatever...).
+- No suggestions. You know what books you'd like to read.
 
 ## Place the built form into context and look for misfits
 
