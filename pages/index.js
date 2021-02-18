@@ -8,12 +8,13 @@ import useLocalStorage from "../lib/useLocalStorage";
 import useSearch from "../lib/useSearch";
 
 export default function Home({ library }) {
-  const [{ books, secret }, setLocal] = useLocalStorage({
+  const [{ books, secret, message }, setLocal] = useLocalStorage({
     books: [],
+    message: "",
     secret: nanoid(),
   });
   //console.log("library", library);
-  //console.log("books", books, secret);
+  //console.log("books", books, message, secret);
   const [search, setSearch] = React.useState("");
   const results = useSearch(search, library);
   return (
@@ -23,12 +24,50 @@ export default function Home({ library }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <input value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div style={{ display: "flex" }}>
+        {(books || []).map(({ bookRecord, id, thumb }) => (
+          <div style={{ border: "1px solid salmon" }} key={id}>
+            <div>
+              <img src={thumb} style={{ height: 100 }} />
+            </div>
+            <div>
+              <button
+                onClick={() => {
+                  setLocal((s) => ({
+                    books: s.books.filter((d) => d.id !== id),
+                  }));
+                  fetch(`api/${bookRecord}?secret=${secret}`, {
+                    method: "DELETE",
+                  });
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <input
+          value={message}
+          onChange={(e) => setLocal((s) => ({ message: e.target.value }))}
+          placeholder="contact message"
+        />
+      </div>
+      <div></div>
+      <div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="search"
+        />
+      </div>
       <div>
         {results.map(
-          ({ id, isbn, googleid, name, author, thumb, messages }) => (
+          ({ bookRecord, id, isbn, name, author, thumb, messages }) => (
             <div
-              key={googleid || id}
+              key={id}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -37,15 +76,38 @@ export default function Home({ library }) {
             >
               <img src={thumb} />
               <div>
-                <div>{googleid || id}</div>
+                <div>{id}</div>
                 <div>{name}</div>
-                {author.length > 0 && <div>author</div>}
+                {author.length > 0 && <div>{author}</div>}
               </div>
               <div>
                 <button
-                  onClick={() =>
-                    setLocal((s) => ({ ...s, myBooks: [...s.myBooks, id] }))
-                  }
+                  disabled={message.length === 0}
+                  onClick={() => {
+                    setSearch("");
+                    fetch("api/post", {
+                      method: "POST",
+                      body: JSON.stringify({
+                        secret,
+                        message,
+                        bookRecord,
+                        id,
+                        isbn,
+                        name,
+                        author,
+                        thumb,
+                      }),
+                    })
+                      .then((res) => res.json())
+                      .then(({ bookRecord }) =>
+                        setLocal((s) => ({
+                          books: [
+                            ...s.books,
+                            { bookRecord, id, isbn, name, author, thumb },
+                          ],
+                        }))
+                      );
+                  }}
                 >
                   Add
                 </button>
@@ -66,7 +128,9 @@ export async function getStaticProps() {
   const books = await base("Books")
     .select({ filterByFormula: "{ref_count} > 0" })
     .all()
-    .then((records) => records.map(({ id, fields }) => ({ id, ...fields })));
+    .then((records) =>
+      records.map(({ id, fields }) => ({ bookRecord: id, ...fields }))
+    );
 
   const messages = await base("Board")
     .select({
@@ -89,8 +153,18 @@ export async function getStaticProps() {
     // will be passed to the page component as props
     props: {
       library: books.map(
-        ({ id, name = "", author = "", refs, thumb = "" }) => ({
+        ({
+          bookRecord,
           id,
+          isbn = "",
+          name = "",
+          author = "",
+          refs,
+          thumb = "",
+        }) => ({
+          bookRecord,
+          id,
+          isbn,
           name,
           author,
           thumb,
