@@ -121,57 +121,47 @@ export default function Home({ library }) {
 }
 
 export async function getStaticProps() {
-  const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-    "appns6h4YWezxqUaX"
-  );
-
-  const books = await base("Books")
-    .select({ filterByFormula: "{ref_count} > 0" })
-    .all()
-    .then((records) =>
-      records.map(({ id, fields }) => ({ bookRecord: id, ...fields }))
+  try {
+    const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
+      process.env.AIRTABLE_BASE_ID
     );
 
-  const messages = await base("Board")
-    .select({
-      filterByFormula: `SEARCH(RECORD_ID(), "${_.uniq(
-        _.flatten(books.map((d) => d.refs))
-      ).join(",")}")`,
-    })
-    .all()
-    .then((records) =>
-      records.reduce(
-        (acc, { id, fields }) => ({
-          ...acc,
-          [id]: [fields.message, fields.added],
-        }),
-        {}
-      )
-    );
+    const books = await base("Books")
+      .select({ filterByFormula: "{ref_count} > 0" })
+      .all()
+      .then((records) =>
+        records.map(({ id, fields }) => ({ bookRecord: id, ...fields }))
+      );
 
-  return {
-    // will be passed to the page component as props
-    props: {
-      library: books.map(
-        ({
-          bookRecord,
-          id,
-          isbn = "",
-          name = "",
-          author = "",
-          refs,
-          thumb = "",
-        }) => ({
-          bookRecord,
-          id,
-          isbn,
-          name,
-          author,
-          thumb,
-          messages: refs.map((r) => messages[r]),
-        })
-      ),
-    },
-    revalidate: 10, // At most every 10 seconds
-  };
+    const messages = await base("Board")
+      .select({
+        filterByFormula: `SEARCH(RECORD_ID(), "${_.uniq(
+          _.flatten(books.map((d) => d.refs))
+        ).join(",")}")`,
+      })
+      .all()
+      .then((records) =>
+        records.reduce(
+          (acc, { id, fields }) => ({
+            ...acc,
+            [id]: [fields.message, fields.added],
+          }),
+          {}
+        )
+      );
+
+    const library = books.map(({ refs, ref_count, ...rest }) => ({
+      ...rest,
+      messages: refs.map((r) => messages[r]),
+    }));
+
+    return {
+      // will be passed to the page component as props
+      props: { library },
+      revalidate: 10, // At most every 10 seconds
+    };
+  } catch (error) {
+    console.error(error);
+    return { props: { library: [], error: true } };
+  }
 }
