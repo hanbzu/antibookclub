@@ -8,13 +8,13 @@ import useLocalStorage from "../lib/useLocalStorage";
 import useSearch from "../lib/useSearch";
 
 export default function Home({ library }) {
-  const [{ books, secret, message }, setLocal] = useLocalStorage({
+  const [{ books = [], message = "", secret }, setLocal] = useLocalStorage({
     books: [],
     message: "",
     secret: nanoid(),
   });
   //console.log("library", library);
-  //console.log("books", books, message, secret);
+  console.log("books", books, message, secret);
   const [search, setSearch] = React.useState("");
   const results = useSearch(search, library);
   return (
@@ -25,7 +25,7 @@ export default function Home({ library }) {
       </Head>
 
       <div style={{ display: "flex" }}>
-        {(books || []).map(({ bookRecord, id, thumb }) => (
+        {books.map(({ bookRecord, id, thumb }) => (
           <div style={{ border: "1px solid salmon" }} key={id}>
             <div>
               <img src={thumb} style={{ height: 100 }} />
@@ -116,6 +116,14 @@ export default function Home({ library }) {
           )
         )}
       </div>
+
+      <ShareWidget
+        text={`Here's some books I'm willing to read:
+${books.map(({ name }) => `• ${name}`).join("\n")}
+
+Would you join my #AntiBookClub on any?
+${message}`}
+      />
     </div>
   );
 }
@@ -164,4 +172,35 @@ export async function getStaticProps() {
     console.error(error);
     return { props: { library: [], error: true } };
   }
+}
+
+function ShareWidget({ text }) {
+  const ref = React.useRef();
+  const [textLocal, setTextLocal] = React.useState(text);
+  React.useEffect(() => {
+    setTextLocal(text);
+  }, [text]);
+  return (
+    <div>
+      <textarea
+        ref={ref}
+        rows="8"
+        cols="30"
+        value={textLocal}
+        onChange={(e) => setTextLocal(e.target.value)}
+      />
+      <button onClick={() => navigator.clipboard.writeText(textLocal)}>
+        Copy
+      </button>
+      <a
+        target="_blank"
+        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          text
+        )}`}
+      >
+        Tweet
+      </a>
+      <a href={`mailto:?body=${encodeURIComponent(text)}`}>Email</a>
+    </div>
+  );
 }
