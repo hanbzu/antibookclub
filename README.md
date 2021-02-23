@@ -35,3 +35,9 @@ To find people to read a book with (~ a book club).
 ## Implementation details
 
 An Airtable automation can delete old demand periodically: https://community.airtable.com/t/how-to-mark-a-record-for-deletion-automatically-after-18-hours/33533/2 (100 runs per month in free tier).
+
+TODO:
+
+- See messages in the books
+- Friend page (you can add any of the books your friend suggested)
+- Styling and clear copy
