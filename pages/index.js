@@ -118,11 +118,12 @@ export default function Home({ library }) {
       </div>
 
       <ShareWidget
-        text={`Here's some books I'm willing to read:
+        text={`Here are some books I'm willing to read:
 ${books.map(({ name }) => `• ${name}`).join("\n")}
 
-Would you join my #AntiBookClub on any?
-${message}`}
+Would you join my #AntiBookClub on any? https://antibookclub.vercel.app?friend=${books
+          .map((d) => d.id)
+          .join(",")}`}
       />
     </div>
   );
